@@ -2,6 +2,12 @@
 
 ## Introduction:
 This project presents a energy-efficient human detection system designed for smart office environments using a Red Pitaya STEMlab 125-14 and an SRF02 ultrasonic sensor. Operating on a client-server model via Ethernet, the system captures 25,000 ADC data samples and transmits them via UDP to a Python application for analysis. To maximize energy efficiency, the system utilizes a two-stage detection process: an initial "Activity Detection" stage that uses Distance Threshold 10 cm to identify sudden environmental changes, and a secondary "CNN Classify" stage that employs a pre-trained 2D CNN model on spectrogram data for accurate human classification. Upon confirming human presence, the system activates LED7 on the Red Pitaya board.
+
+![redpitaya](https://github.com/user-attachments/assets/e9d0f54f-ef3a-4613-8029-1166297db405)
+
+
+
+
 ## Project Structure
 ```
 project/
