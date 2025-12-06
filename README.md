@@ -35,7 +35,7 @@ The interface features large visual indicators—HUMAN (blinks green) and NON-HU
 
 System Demonstration:
 
-1. Baseline Operation (Static Environment): In the idle state, the system monitors a static background (e.g., floor at 205 cm). Since distance fluctuations do not exceed the 10 cm threshold, the system remains in IDLE mode with LED7 OFF.
+In this figure, the system monitors a static background (e.g., floor at 205 cm). Since distance fluctuations do not exceed the 10 cm threshold, the system remains in IDLE mode with LED7 OFF.
 
  .Classification: The model correctly identifies the environment as NON-HUMAN with 99.8% confidence.
 
@@ -45,7 +45,7 @@ System Demonstration:
 
 ![gui01](https://github.com/user-attachments/assets/dbc59766-226a-49ee-92ea-279396fb48fd)
 
-2. Active Trigger Response: In this scenario, a non-human object (chair) is detected at 156 cm. The sudden distance shift exceeds the threshold, triggering the Activity state (Count: 3) and instantly switching LED7 ON.
+In this scenario, a non-human object (chair) is detected at 156 cm. The sudden distance shift exceeds the threshold, triggering the Activity state (Count: 3) and instantly switching LED7 ON.
 
 . Responsiveness: Despite the dynamic change, the model maintains high accuracy (99.0% confidence).
 
@@ -55,6 +55,20 @@ System Demonstration:
 
 
 ![gui1](https://github.com/user-attachments/assets/1a8b42bb-6521-4461-a9c6-16b4b3089f1a)
+
+In this event, the system detects a HUMAN at 102 cm with 100% confidence. The subject's entry caused a sudden distance shift exceeding the 10 cm threshold, instantly triggering the Active status (Count: 24) and turning LED7 ON and continuous CNN Checking.
+
+Dynamic Response: The metrics capture the real-time transition from a static background (38 Non-Human detections) to human presence (47 Human detections).
+
+Performance: Despite receiving 2,257 broken packets, the pipeline successfully filtered and processed 112 valid signals at 1.23/sec with a 7.9 ms inference time.
+
+Classification: The model demonstrated valid tracking with 27 "Uncertain" states buffering the transition between definitive Human and Non-Human classes.
+
+![human01](https://github.com/user-attachments/assets/c877561d-e542-483c-8974-7ef6949b3859)
+
+LED7 (yellow light) turns on when HUMAN is detected
+
+<img width="1315" height="869" alt="image" src="https://github.com/user-attachments/assets/0e068fd1-d075-4b6a-80b9-50541e9f07f8" />
 
 
 ## Project Structure
