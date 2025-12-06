@@ -101,7 +101,8 @@ Real-Time Validation Field trials confirmed the system's robustness across 6 dis
    8	          Human 5	            Yes	                     No
    9	          Human 6	            Yes                     	No
 ```
-
+## Real-time usage of The Project
+This project focuses on generating optimized weights for a Convolutional Neural Network (CNN) to enable a SONAR sensor array to detect human presence within office environments. By utilizing annotated time-frequency data, the system achieves high-accuracy classification to distinguish between humans and non-human objects. In real-time operation, the detection logic interfaces directly with the Red Pitaya’s internal C code to trigger automated lighting systems immediately upon confirming a person's presence.
 ## Project Structure
 ```
 project/
