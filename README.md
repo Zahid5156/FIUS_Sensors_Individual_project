@@ -1,11 +1,60 @@
 # Smart lighting system for electricity saving with Red pitaya and Ultrasonic sensor
+## Keywords:
+Red Pitaya, Signal Processing, Spectrogram, Short Time Fourier Transform, Convolutional Neural Network, Graphical User Interface. 
 
 ## Introduction:
 This project presents a energy-efficient human detection system designed for smart office environments using a Red Pitaya STEMlab 125-14 and an SRF02 ultrasonic sensor. Operating on a client-server model via Ethernet, the system captures 25,000 ADC data samples and transmits them via UDP to a Python application for analysis. To maximize energy efficiency, the system utilizes a two-stage detection process: an initial "Activity Detection" stage that uses Distance Threshold 10 cm to identify sudden environmental changes, and a secondary "CNN Classify" stage that employs a pre-trained 2D CNN model on spectrogram data for accurate human classification. Upon confirming human presence, the system activates LED7 on the Red Pitaya board.
 
 ![redpitaya](https://github.com/user-attachments/assets/e9d0f54f-ef3a-4613-8029-1166297db405)
 
+## Data Collection:
+To build this project, ADC data was collected using a C-based Red Pitaya library (prebuilt as a UDP client and installed in the laboratory). The experimental setup utilized the sensor’s I2C interface to read from the ultrasonic proximity sensor. For data collection, the sensor was mounted on a metal stand at three different heights: 210 cm, 230 cm, and 250 cm, measured from the sensor head to the ground. The total dataset consists of 186,500 signals. The distribution between the two classes is as follows:
+```
+Class	    Count	  Percentage
+Human	    99,500	   53.35%
+Non-Human	87,000	   46.65%
+Total	    186,500	   100.00%
+```
+![data01](https://github.com/user-attachments/assets/61e829a9-60c2-4e17-93cf-8979aa65db0e)
+## Data Preprocessing:
+Raw ultrasonic signals were cleaned by removing the first 5,517 columns and discarding waveforms shorter than 2,048 samples. Valid signals were transformed into magnitude spectrograms via STFT using a 1.953125 MHz sampling rate, a 2,048-sample Hamming window, and 50% overlap. This process yielded 1,025 frequency bins, resulting in a final stacked float32 tensor of shape $(186500, 1025, 18)$. Labels were binary encoded (Human=1, Non-Human=0), and the processed features were serialized as NumPy arrays for training.
 
+![Spectrogram1](https://github.com/user-attachments/assets/94966618-a0d0-4ef4-92c7-f876e3bf2600)
+## Model training:
+The preprocessed spectrogram images were fed into a 2D Convolutional Neural Network (CNN) SpectrogramCNN model to classify human and non-human subjects. This model was implemented using PyTorch, chosen for its flexibility and efficiency. The SpectrogramCNN model was evaluated using a randomized 80/20 split on the spectrogram dataset, designating 149,200 samples for training and 37,300 samples for validation. Training was conducted over 15 epochs, requiring approximately 76 minutes. The training dynamics indicated a robust learning process; the model achieved a validation accuracy of 99.53% with a minimal validation loss of 0.0104 at epoch 14, which was selected as the optimal checkpoint. The structure of the 2D CNN model used for classification is given below:
+
+![SpectrogramCNN](https://github.com/user-attachments/assets/c5557be6-0969-4f38-aab0-b278f8cf54a2)
+
+## Graphical User Interface (GUI):
+This is the visual representation of the GUI when the model starts: To initiate the system, click the "Start Sensor Detetction" button. This establishes an SSH connection, executes the dma_with_udp_faster.c acquisition code on the Red Pitaya, and confirms the link via a UDP handshake. Once connected, the system immediately begins the analysis pipeline, continuously processing data at a rate of two signals per second.
+The interface features large visual indicators—HUMAN (blinks green) and NON-HUMAN (blinks red)—alongside real-time metrics for object distance, model confidence, and LED7 status. Movement is tracked via an "Activity" label (IDLE/ACTIVE) based on a user-adjustable Distance Threshold (default: 10 cm). Comprehensive telemetry displays connection status, detection counters, inference time, and signal loss warnings at the bottom of the window, with the entire session controlled via the main Start/Stop buttons.
+
+![gui00](https://github.com/user-attachments/assets/0063d42d-e822-42f3-87f6-82c524af1537)
+
+
+
+System Demonstration:
+
+1. Baseline Operation (Static Environment): In the idle state, the system monitors a static background (e.g., floor at 205 cm). Since distance fluctuations do not exceed the 10 cm threshold, the system remains in IDLE mode with LED7 OFF.
+
+ .Classification: The model correctly identifies the environment as NON-HUMAN with 99.8% confidence.
+
+. Performance: Processing remains stable at 1.82 signals/sec (6.8 ms inference time).
+
+. Robustness: The filter successfully discards incomplete data (3,979 broken packets) while processing 189 valid signals (186 Non-Human, 3 Uncertain) with zero false positives.
+
+![gui01](https://github.com/user-attachments/assets/dbc59766-226a-49ee-92ea-279396fb48fd)
+
+2. Active Trigger Response: In this scenario, a non-human object (chair) is detected at 156 cm. The sudden distance shift exceeds the threshold, triggering the Activity state (Count: 3) and instantly switching LED7 ON.
+
+. Responsiveness: Despite the dynamic change, the model maintains high accuracy (99.0% confidence).
+
+. Stability: During extended operation (23,337 total packets), the system processed 993 valid signals at 6.6 ms inference time.
+
+. Accuracy: The session recorded 979 Non-Human and 14 Uncertain classifications. Crucially, zero Human false positives were generated during the active trigger event.
+
+
+![gui1](https://github.com/user-attachments/assets/1a8b42bb-6521-4461-a9c6-16b4b3089f1a)
 
 
 ## Project Structure
