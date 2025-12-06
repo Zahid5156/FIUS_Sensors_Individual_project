@@ -70,6 +70,37 @@ LED7 (yellow light) turns on when HUMAN is detected
 
 <img width="1315" height="869" alt="image" src="https://github.com/user-attachments/assets/0e068fd1-d075-4b6a-80b9-50541e9f07f8" />
 
+## Model Evaluation & Performance
+The SpectrogramCNN was trained on a randomized 80/20 split (149,200 Train / 37,300 Val) over 15 epochs (~76 mins). The model achieved optimal convergence at Epoch 14 with a validation accuracy of 99.53% and a minimal loss of 0.0104, utilizing a weighted loss function to effectively mitigate class imbalance.
+
+Classification Metrics Evaluation on the validation set (N=37,300) demonstrated exceptional discrimination with a Precision of 99.79% and Recall of 99.31% for the Human class.
+High-confidence predictions (>95% score) accounted for 98.47% of all samples, achieving 99.96% accuracy within this subset.
+
+<img width="1350" height="1182" alt="confusion_matrix_simple" src="https://github.com/user-attachments/assets/f6b0af4b-c211-4463-a07b-028fd7d37776" />
+
+
+True Positives: 19,647 (Human correctly identified)
+
+True Negatives: 17,476 (Non-Human correctly rejected)
+
+False Positives: 41 (Low error rate indicating high reliability)
+
+False Negatives: 136
+
+Real-Time Validation Field trials confirmed the system's robustness across 6 distinct subjects (4 unknown, 2 known). The model consistently activated the LED for human presence while correctly classifying moving inanimate objects (e.g., chairs) as Non-Human, effectively filtering out false positives in dynamic environments.
+
+```
+   NR.  	Data type Actual	  Classified as Human	   Classified as Non-Human
+   1	          Floor              	No	                      Yes
+   2	          Human1	            Yes	                     No
+   3	          Chair	              No                      Yes
+   4	          Human 2	            Yes                      No
+   5	          Human 3	            Yes	                     No
+   6	          Human 4	            Yes                     	No
+   7	          Table	              No                     	 Yes
+   8	          Human 5	            Yes	                     No
+   9	          Human 6	            Yes                     	No
+```
 
 ## Project Structure
 ```
