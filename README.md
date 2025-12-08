@@ -267,13 +267,6 @@ Centralized styling:
 - Monitor actual rate in UI
 - Check for broken signals
 
-## License
-
-[Your License Here]
-
-## Authors
-
-[Your Name/Team]
 
 ## Version History
 
