@@ -19,90 +19,14 @@ Total	    186,500	   100.00%
 ## Data Preprocessing:
 Raw ultrasonic signals were cleaned by removing the first 5,517 columns and discarding waveforms shorter than 2,048 samples. Valid signals were transformed into magnitude spectrograms via STFT using a 1.953125 MHz sampling rate, a 2,048-sample Hamming window, and 50% overlap. This process yielded 1,025 frequency bins, resulting in a final stacked float32 tensor of shape $(186500, 1025, 18)$. Labels were binary encoded (Human=1, Non-Human=0), and the processed features were serialized as NumPy arrays for training.
 
-![Spectrogram1](https://github.com/user-attachments/assets/94966618-a0d0-4ef4-92c7-f876e3bf2600)
+![Spectrogram2](https://github.com/user-attachments/assets/125b7a0a-633b-47a8-aa6c-4c14bc90a289)
+
 ## Model training:
 The preprocessed spectrogram images were fed into a 2D Convolutional Neural Network (CNN) SpectrogramCNN model to classify human and non-human subjects. This model was implemented using PyTorch, chosen for its flexibility and efficiency. The SpectrogramCNN model was evaluated using a randomized 80/20 split on the spectrogram dataset, designating 149,200 samples for training and 37,300 samples for validation. Training was conducted over 15 epochs, requiring approximately 76 minutes. The training dynamics indicated a robust learning process; the model achieved a validation accuracy of 99.53% with a minimal validation loss of 0.0104 at epoch 14, which was selected as the optimal checkpoint. The structure of the 2D CNN model used for classification is given below:
 
 ![SpectrogramCNN](https://github.com/user-attachments/assets/c5557be6-0969-4f38-aab0-b278f8cf54a2)
 
-## Graphical User Interface (GUI):
-This is the visual representation of the GUI when the model starts: To initiate the system, click the "Start Sensor Detetction" button. This establishes an SSH connection, executes the dma_with_udp_faster.c acquisition code on the Red Pitaya, and confirms the link via a UDP handshake. Once connected, the system immediately begins the analysis pipeline, continuously processing data at a rate of two signals per second.
-The interface features large visual indicators—HUMAN (blinks green) and NON-HUMAN (blinks red)—alongside real-time metrics for object distance, model confidence, and LED7 status. Movement is tracked via an "Activity" label (IDLE/ACTIVE) based on a user-adjustable Distance Threshold (default: 10 cm). Comprehensive telemetry displays connection status, detection counters, inference time, and signal loss warnings at the bottom of the window, with the entire session controlled via the main Start/Stop buttons.
 
-![gui00](https://github.com/user-attachments/assets/0063d42d-e822-42f3-87f6-82c524af1537)
-
-
-
-System Demonstration:
-
-In this figure, the system monitors a static background (e.g., floor at 205 cm). Since distance fluctuations do not exceed the 10 cm threshold, the system remains in IDLE mode with LED7 OFF.
-
- .Classification: The model correctly identifies the environment as NON-HUMAN with 99.8% confidence.
-
-. Performance: Processing remains stable at 1.82 signals/sec (6.8 ms inference time).
-
-. Robustness: The filter successfully discards incomplete data (3,979 broken packets) while processing 189 valid signals (186 Non-Human, 3 Uncertain) with zero false positives.
-
-![gui01](https://github.com/user-attachments/assets/dbc59766-226a-49ee-92ea-279396fb48fd)
-
-In this scenario, a non-human object (chair) is detected at 156 cm. The sudden distance shift exceeds the threshold, triggering the Activity state (Count: 3) and instantly switching LED7 ON.
-
-. Responsiveness: Despite the dynamic change, the model maintains high accuracy (99.0% confidence).
-
-. Stability: During extended operation (23,337 total packets), the system processed 993 valid signals at 6.6 ms inference time.
-
-. Accuracy: The session recorded 979 Non-Human and 14 Uncertain classifications. Crucially, zero Human false positives were generated during the active trigger event.
-
-
-![gui1](https://github.com/user-attachments/assets/1a8b42bb-6521-4461-a9c6-16b4b3089f1a)
-
-In this event, the system detects a HUMAN at 102 cm with 100% confidence. The subject's entry caused a sudden distance shift exceeding the 10 cm threshold, instantly triggering the Active status (Count: 24) and turning LED7 ON and continuous CNN Checking.
-
-Dynamic Response: The metrics capture the real-time transition from a static background (38 Non-Human detections) to human presence (47 Human detections).
-
-Performance: Despite receiving 2,257 broken packets, the pipeline successfully filtered and processed 112 valid signals at 1.23/sec with a 7.9 ms inference time.
-
-Classification: The model demonstrated valid tracking with 27 "Uncertain" states buffering the transition between definitive Human and Non-Human classes.
-
-![human01](https://github.com/user-attachments/assets/c877561d-e542-483c-8974-7ef6949b3859)
-
-LED7 (yellow light) turns on when HUMAN is detected
-
-<img width="1315" height="869" alt="image" src="https://github.com/user-attachments/assets/0e068fd1-d075-4b6a-80b9-50541e9f07f8" />
-
-## Model Evaluation & Performance
-The SpectrogramCNN was trained on a randomized 80/20 split (149,200 Train / 37,300 Val) over 15 epochs (~76 mins). The model achieved optimal convergence at Epoch 14 with a validation accuracy of 99.53% and a minimal loss of 0.0104, utilizing a weighted loss function to effectively mitigate class imbalance.
-
-Classification Metrics Evaluation on the validation set (N=37,300) demonstrated exceptional discrimination with a Precision of 99.79% and Recall of 99.31% for the Human class.
-High-confidence predictions (>95% score) accounted for 98.47% of all samples, achieving 99.96% accuracy within this subset.
-
-<img width="1350" height="1182" alt="confusion_matrix_simple" src="https://github.com/user-attachments/assets/f6b0af4b-c211-4463-a07b-028fd7d37776" />
-
-
-True Positives: 19,647 (Human correctly identified)
-
-True Negatives: 17,476 (Non-Human correctly rejected)
-
-False Positives: 41 (Low error rate indicating high reliability)
-
-False Negatives: 136
-
-Real-Time Validation Field trials confirmed the system's robustness across 6 distinct subjects (4 unknown, 2 known). The model consistently activated the LED for human presence while correctly classifying moving inanimate objects (e.g., chairs) as Non-Human, effectively filtering out false positives in dynamic environments.
-
-```
-   NR.  	Data type Actual	  Classified as Human	   Classified as Non-Human
-   1	          Floor              	No	                      Yes
-   2	          Human1	            Yes	                     No
-   3	          Chair	              No                      Yes
-   4	          Human 2	            Yes                      No
-   5	          Human 3	            Yes	                     No
-   6	          Human 4	            Yes                     	No
-   7	          Table	              No                     	 Yes
-   8	          Human 5	            Yes	                     No
-   9	          Human 6	            Yes                     	No
-```
-## Real-time usage of The Project
-This project focuses on generating optimized weights for a Convolutional Neural Network (CNN) to enable a SONAR sensor array to detect human presence within office environments. By utilizing annotated time-frequency data, the system achieves high-accuracy classification to distinguish between humans and non-human objects. In real-time operation, the detection logic interfaces directly with the Red Pitaya’s internal C code to trigger automated lighting systems immediately upon confirming a person's presence.
 ## Project Structure
 ```
 project/
@@ -229,3 +153,82 @@ Custom Qt widgets:
 Centralized styling:
 - Color palette (`Colors` class)
 - Pre-defined stylesheets (`StyleSheets` class)
+
+  ## Graphical User Interface (GUI):
+This is the visual representation of the GUI when the model starts: To initiate the system, click the "Start Sensor Detetction" button. This establishes an SSH connection, executes the dma_with_udp_faster.c acquisition code on the Red Pitaya, and confirms the link via a UDP handshake. Once connected, the system immediately begins the analysis pipeline, continuously processing data at a rate of two signals per second.
+The interface features large visual indicators—HUMAN (blinks green) and NON-HUMAN (blinks red)—alongside real-time metrics for object distance, model confidence, and LED7 status. Movement is tracked via an "Activity" label (IDLE/ACTIVE) based on a user-adjustable Distance Threshold (default: 10 cm). Comprehensive telemetry displays connection status, detection counters, inference time, and signal loss warnings at the bottom of the window, with the entire session controlled via the main Start/Stop buttons.
+
+![gui00](https://github.com/user-attachments/assets/0063d42d-e822-42f3-87f6-82c524af1537)
+
+
+
+System Demonstration:
+
+In this figure, the system monitors a static background (e.g., floor at 205 cm). Since distance fluctuations do not exceed the 10 cm threshold, the system remains in IDLE mode with LED7 OFF.
+
+ .Classification: The model correctly identifies the environment as NON-HUMAN with 99.8% confidence.
+
+. Performance: Processing remains stable at 1.82 signals/sec (6.8 ms inference time).
+
+. Robustness: The filter successfully discards incomplete data (3,979 broken packets) while processing 189 valid signals (186 Non-Human, 3 Uncertain) with zero false positives.
+
+![gui01](https://github.com/user-attachments/assets/dbc59766-226a-49ee-92ea-279396fb48fd)
+
+In this scenario, a non-human object (chair) is detected at 156 cm. The sudden distance shift exceeds the threshold, triggering the Activity state (Count: 3) and instantly switching LED7 ON.
+
+. Responsiveness: Despite the dynamic change, the model maintains high accuracy (99.0% confidence).
+
+. Stability: During extended operation (23,337 total packets), the system processed 993 valid signals at 6.6 ms inference time.
+
+. Accuracy: The session recorded 979 Non-Human and 14 Uncertain classifications. Crucially, zero Human false positives were generated during the active trigger event.
+
+
+![gui1](https://github.com/user-attachments/assets/1a8b42bb-6521-4461-a9c6-16b4b3089f1a)
+
+In this event, the system detects a HUMAN at 102 cm with 100% confidence. The subject's entry caused a sudden distance shift exceeding the 10 cm threshold, instantly triggering the Active status (Count: 24) and turning LED7 ON and continuous CNN Checking.
+
+Dynamic Response: The metrics capture the real-time transition from a static background (38 Non-Human detections) to human presence (47 Human detections).
+
+Performance: Despite receiving 2,257 broken packets, the pipeline successfully filtered and processed 112 valid signals at 1.23/sec with a 7.9 ms inference time.
+
+Classification: The model demonstrated valid tracking with 27 "Uncertain" states buffering the transition between definitive Human and Non-Human classes.
+
+![human01](https://github.com/user-attachments/assets/c877561d-e542-483c-8974-7ef6949b3859)
+
+LED7 (yellow light) turns on when HUMAN is detected
+
+<img width="1315" height="869" alt="image" src="https://github.com/user-attachments/assets/0e068fd1-d075-4b6a-80b9-50541e9f07f8" />
+
+## Model Evaluation & Performance
+The SpectrogramCNN was trained on a randomized 80/20 split (149,200 Train / 37,300 Val) over 15 epochs (~76 mins). The model achieved optimal convergence at Epoch 14 with a validation accuracy of 99.53% and a minimal loss of 0.0104, utilizing a weighted loss function to effectively mitigate class imbalance.
+
+Classification Metrics Evaluation on the validation set (N=37,300) demonstrated exceptional discrimination with a Precision of 99.79% and Recall of 99.31% for the Human class.
+High-confidence predictions (>95% score) accounted for 98.47% of all samples, achieving 99.96% accuracy within this subset.
+
+<img width="1350" height="1182" alt="confusion_matrix_simple" src="https://github.com/user-attachments/assets/f6b0af4b-c211-4463-a07b-028fd7d37776" />
+
+
+True Positives: 19,647 (Human correctly identified)
+
+True Negatives: 17,476 (Non-Human correctly rejected)
+
+False Positives: 41 (Low error rate indicating high reliability)
+
+False Negatives: 136
+
+Real-Time Validation Field trials confirmed the system's robustness across 6 distinct subjects (4 unknown, 2 known). The model consistently activated the LED for human presence while correctly classifying moving inanimate objects (e.g., chairs) as Non-Human, effectively filtering out false positives in dynamic environments.
+
+```
+   NR.  	Data type Actual	  Classified as Human	   Classified as Non-Human
+   1	          Floor              	No	                      Yes
+   2	          Human1	            Yes	                     No
+   3	          Chair	              No                      Yes
+   4	          Human 2	            Yes                      No
+   5	          Human 3	            Yes	                     No
+   6	          Human 4	            Yes                     	No
+   7	          Table	              No                     	 Yes
+   8	          Human 5	            Yes	                     No
+   9	          Human 6	            Yes                     	No
+```
+## Real-time usage of The Project
+This project focuses on generating optimized weights for a Convolutional Neural Network (CNN) to enable a SONAR sensor array to detect human presence within office environments. By utilizing annotated time-frequency data, the system achieves high-accuracy classification to distinguish between humans and non-human objects. In real-time operation, the detection logic interfaces directly with the Red Pitaya’s internal C code to trigger automated lighting systems immediately upon confirming a person's presence.
