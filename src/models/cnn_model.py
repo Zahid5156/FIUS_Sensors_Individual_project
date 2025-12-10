@@ -1,6 +1,5 @@
-"""
-CNN Model Architecture for Spectrogram Classification
-"""
+# src/models/cnn_model.py
+# CNN Model Architecture for Spectrogram Classification
 
 try:
     import torch
@@ -67,40 +66,3 @@ class SpectrogramCNN(nn.Module):
         x = self.conv_block4(x)
         x = self.fc_layers(x)
         return x
-
-
-def get_device(preferred_device='auto'):
-    """
-    Get the best available device for PyTorch
-    
-    Args:
-        preferred_device: 'auto', 'mps', 'cuda', or 'cpu'
-    
-    Returns:
-        torch.device
-    """
-    if not PYTORCH_AVAILABLE:
-        raise ImportError("PyTorch is not installed!")
-    
-    if preferred_device == 'auto':
-        if torch.backends.mps.is_available():
-            device = torch.device('mps')
-            print("Using MPS (Apple Silicon GPU)")
-        elif torch.cuda.is_available():
-            device = torch.device('cuda')
-            print("Using CUDA GPU")
-        else:
-            device = torch.device('cpu')
-            print("Using CPU")
-    else:
-        if preferred_device == 'mps' and torch.backends.mps.is_available():
-            device = torch.device('mps')
-            print("Using MPS (Apple Silicon GPU)")
-        elif preferred_device == 'cuda' and torch.cuda.is_available():
-            device = torch.device('cuda')
-            print("Using CUDA GPU")
-        else:
-            device = torch.device('cpu')
-            print("Using CPU")
-    
-    return device

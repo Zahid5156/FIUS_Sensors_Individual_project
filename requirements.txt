@@ -1,0 +1,19 @@
+# requirements.txt
+# Human Detection System Dependencies
+
+# GUI Framework
+PyQt6>=6.4.0
+
+# Plotting
+pyqtgraph>=0.13.0
+
+# Machine Learning
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Signal Processing & Numerical
+scipy>=1.10.0
+numpy>=1.24.0
+
+# Hardware Communication
+paramiko>=3.0.0
