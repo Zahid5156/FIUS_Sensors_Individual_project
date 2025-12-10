@@ -8,7 +8,7 @@ from pathlib import Path
 # ============================================================================
 
 # Default paths
-DEFAULT_MODEL_DIR = Path("/Volumes/Works/gitupload/model")
+DEFAULT_MODEL_DIR = Path("/Users/zahid/Documents/individual-project-git/FIUS_Sensors_Individual_project/model")
 DEFAULT_MODEL_PATH = DEFAULT_MODEL_DIR / "best_model_mps.pth"
 BEST_MODEL_PATH = DEFAULT_MODEL_DIR / "best_model_mps.pth"
 
