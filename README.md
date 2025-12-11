@@ -29,35 +29,56 @@ The preprocessed spectrogram images were fed into a 2D Convolutional Neural Netw
 
 ## Project Structure
 ```
-project/
-├── main.py                      # Application entry point
-├── config.py                    # Configuration constants
-├── models/
+gitupload/
+├── main.py                          # Application entry point (run this!)
+├── requirements.txt                 # Python dependencies
+├── .gitignore                      # Git ignore rules
+├── model                           # pth model file
+├── jupyter-notebooks                # spectrogram and cnn training files
+├── config/                          # Configuration module
 │   ├── __init__.py
-│   └── cnn_model.py            # CNN architecture (SpectrogramCNN)
-├── detection/
-│   ├── __init__.py
-│   ├── detector.py             # HumanDetector class
-│   └── worker.py               # Detection worker thread
-├── hardware/
-│   ├── __init__.py
-│   └── redpitaya.py            # RedPitaya sensor interface
-├── utils/
-│   ├── __init__.py
-│   └── signal_processing.py    # Signal processing utilities
-└── ui/
+│   └── settings.py                  # All configuration constants
+│
+└── src/                             # Source code
     ├── __init__.py
-    ├── main_window.py          # Main window UI
-    ├── widgets.py              # Custom Qt widgets
-    └── styles.py               # UI styling constants
+    │
+    ├── models/                      # Neural network models
+    │   ├── __init__.py
+    │   └── cnn_model.py            # SpectrogramCNN architecture
+    │
+    ├── detection/                   # Detection logic
+    │   ├── __init__.py
+    │   └── detector.py             # HumanDetector class
+    │
+    ├── hardware/                    # Hardware interfaces
+    │   ├── __init__.py
+    │   └── sensor.py               # RedPitayaSensor class
+    │
+    ├── workers/                     # Background workers
+    │   ├── __init__.py
+    │   └── detection_worker.py     # DetectionWorker & signals
+    │
+    └── gui/                         # GUI components
+        ├── __init__.py
+        └── main_window.py          # MainWindow class
 
 ```
 
-### Requirements
+### Install Dependencies
 
 ```bash
 pip install PyQt6 pyqtgraph torch scipy numpy pandas paramiko
 ```
+```bash
+# Install all required packages (inside virtual environment)
+pip install -r requirements.txt
+```
+
+**Alternative (without virtual environment):**
+```bash
+pip3 install -r requirements.txt --user
+```
+
 ### Dependencies
 
 - Python 3.8+
@@ -71,14 +92,9 @@ pip install PyQt6 pyqtgraph torch scipy numpy pandas paramiko
 
 ## Configuration
 
-Edit `config.py` to customize:
+All configuration is centralized in `config/settings.py`. Edit this file to customize:
+To change CNN confidence threshold, edit `src/gui/main_window.py`:
 
-- **Model paths**: Update `DEFAULT_MODEL_DIR`, `DEFAULT_MODEL_PATH`
-- **Sensor settings**: Modify RedPitaya IP, ports
-- **Detection parameters**: Change `SIGNALS_PER_SECOND`, `DEFAULT_DISTANCE_THRESHOLD_CM`
-- **LED timer**: Adjust `LED_TIMER_DURATION`
-
-## Usage
 
 ### Running the Application
 
@@ -96,63 +112,72 @@ python main.py
 
 ## Key Features
 
-- **Rate-Controlled Processing**: 2 valid signals per second
-- **Activity Detection**: Based on distance threshold
-- **LED Control**: Automatic LED7 control on RedPitaya
-- **Two-Step Detection**: 
-  - Step 1: Activity detected → LED ON for 15 seconds
-  - Step 2: CNN classification every 0.5 seconds
-  - If HUMAN after 15s → Reset timer for another 15s
-  - If NON-HUMAN after 15s → LED OFF
+### Two-Step Detection
+1. **Activity Detection**: Distance change threshold (default: 10 cm)
+2. **CNN Classification**: HUMAN vs NON-HUMAN vs UNCERTAIN
+
+### Counter-Based LED Timer
+- LED turns ON when activity detected
+- Counter starts at 0s, counts up to 15s
+- **HUMAN detection** → Counter resets to 0s (LED stays ON)
+- **NON-HUMAN/UNCERTAIN** → Counter continues to 15s → LED turns OFF
+- If counter reaches 15s + HUMAN → Counter resets (timer restarts)
+
+### Real-time UI
+- Live signal plotting (fixed axis: -6000 to +6000 ADC)
+- Blinking status indicators
+- Counter display (0.0s to 15.0s)
+- Configurable thresholds via UI
 
 ## Module Details
 
-### `config.py`
-Contains all configuration constants including model paths, sensor settings, detection parameters, and UI constants.
+### 1. **config/settings.py**
+Central configuration file containing all constants:
+- Model paths and parameters
+- Spectrogram settings (FS, NPERSEG, NOVERLAP, etc.)
+- Distance calculation constants
+- LED control commands
+- Detection timing parameters
+- RedPitaya connection settings
 
-### `models/cnn_model.py`
-Defines the `SpectrogramCNN` architecture with 4 convolutional blocks and fully connected layers.
+### 2. **src/models/cnn_model.py**
+- **SpectrogramCNN**: PyTorch CNN architecture for human detection
+- 4 convolutional blocks with batch normalization and dropout
+- Fully connected layers for classification
 
-### `detection/detector.py`
-`HumanDetector` class that loads the CNN model and performs inference on spectrograms.
+### 3. **src/detection/detector.py**
+- **HumanDetector**: Main detection class
+- Loads trained model and performs inference
+- Converts raw signals to spectrograms
+- Returns predictions with confidence scores
 
-### `detection/worker.py`
-`DetectionWorker` thread that handles:
-- Rate-controlled signal acquisition
-- Activity detection
-- CNN classification
-- LED timer management
+### 4. **src/hardware/sensor.py**
+- **RedPitayaSensor**: Interface to RedPitaya hardware
+- UDP communication for data acquisition
+- SSH commands for LED control
+- Distance calculation from sensor data
 
-### `hardware/redpitaya.py`
-`RedPitayaSensor` class for:
-- UDP communication with RedPitaya
-- SSH command execution
-- LED7 control
-- Distance measurement correction
+### 5. **src/workers/detection_worker.py**
+- **DetectionWorker**: Background thread for continuous detection
+- **DetectionWorkerSignals**: Qt signals for inter-thread communication
+- Rate-controlled signal processing (2 valid signals/second)
+- Counter-based LED timer management
+- Activity detection based on distance threshold
 
-### `utils/signal_processing.py`
-Utility functions for:
-- Converting signals to spectrograms
-- Distance measurement correction
+### 6. **src/gui/main_window.py**
+- **MainWindow**: PyQt6-based GUI
+- Real-time signal visualization
+- Detection status indicators (HUMAN/NON-HUMAN)
+- LED status and timer display
+- Configurable threshold and timer settings
+- Statistics display (counts, inference time, rate)
 
-### `ui/main_window.py`
-Main application window with:
-- Signal plotting
-- Detection display
-- Settings controls
-- Statistics monitoring
-
-### `ui/widgets.py`
-Custom Qt widgets:
-- `DetectionButton`: Blinking detection buttons
-- `StatusLabel`: Styled status displays
-- `ActivityIndicator`: Activity animation
-- `LEDStatusLabel`: LED status display
-
-### `ui/styles.py`
-Centralized styling:
-- Color palette (`Colors` class)
-- Pre-defined stylesheets (`StyleSheets` class)
+### 7. **main.py**
+Clean entry point that:
+- Prints startup information
+- Initializes QApplication
+- Creates and shows MainWindow
+- Starts event loop
 
   ## Graphical User Interface (GUI):
 This is the visual representation of the GUI when the model starts: To initiate the system, click the "Start Sensor Detetction" button. This establishes an SSH connection, executes the dma_with_udp_faster.c acquisition code on the Red Pitaya, and confirms the link via a UDP handshake. Once connected, the system immediately begins the analysis pipeline, continuously processing data at a rate of two signals per second.
