@@ -181,11 +181,9 @@ Clean entry point that:
 
   ## Graphical User Interface (GUI):
 This is the visual representation of the GUI when the model starts: To initiate the system, click the "Start Sensor Detetction" button. This establishes an SSH connection, executes the dma_with_udp_faster.c acquisition code on the Red Pitaya, and confirms the link via a UDP handshake. Once connected, the system immediately begins the analysis pipeline, continuously processing data at a rate of two signals per second.
-The interface features large visual indicators—HUMAN (blinks green) and NON-HUMAN (blinks red)—alongside real-time metrics for object distance, model confidence, and LED7 status. Movement is tracked via an "Activity" label (IDLE/ACTIVE) based on a user-adjustable Distance Threshold (default: 10 cm). Comprehensive telemetry displays connection status, detection counters, inference time, and signal loss warnings at the bottom of the window, with the entire session controlled via the main Start/Stop buttons.
+The interface features large visual indicators—HUMAN (blinks green) and NON-HUMAN (blinks red)—alongside real-time metrics for object distance, model confidence, and LED7 status. Movement is tracked via an "Activity" label (IDLE/ACTIVE) based on a user-adjustable Distance Threshold (default: 10 cm) and LED timer *default 15s). Comprehensive telemetry displays connection status, detection counters, inference time, and signal loss warnings at the bottom of the window, with the entire session controlled via the main Start/Stop buttons.
 
-![gui00](https://github.com/user-attachments/assets/0063d42d-e822-42f3-87f6-82c524af1537)
-
-
+![gui000](https://github.com/user-attachments/assets/3a3d12d7-4b68-46ad-985e-69425898d06a)
 
 System Demonstration:
 
