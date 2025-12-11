@@ -189,34 +189,29 @@ System Demonstration:
 
 In this figure, the system monitors a static background (e.g., floor at 205 cm). Since distance fluctuations do not exceed the 10 cm threshold, the system remains in IDLE mode with LED7 OFF.
 
- .Classification: The model correctly identifies the environment as NON-HUMAN with 99.8% confidence.
+ .Classification: The model correctly identifies the environment as NON-HUMAN with 100% confidence.
 
-. Performance: Processing remains stable at 1.82 signals/sec (6.8 ms inference time).
+. Performance: Processing remains stable at 1.82 signals/sec (6.6 ms inference time).
 
-. Robustness: The filter successfully discards incomplete data (3,979 broken packets) while processing 189 valid signals (186 Non-Human, 3 Uncertain) with zero false positives.
+. Robustness: The filter successfully discards incomplete data (1559 broken packets) while processing 81 valid signals (79 Non-Human, 3 Uncertain) with zero false positives.
 
-![gui01](https://github.com/user-attachments/assets/dbc59766-226a-49ee-92ea-279396fb48fd)
+![gui001](https://github.com/user-attachments/assets/4b4f5a72-11c3-4d85-b486-c2719ef8c22d)
 
-In this scenario, a non-human object (chair) is detected at 156 cm. The sudden distance shift exceeds the threshold, triggering the Activity state (Count: 3) and instantly switching LED7 ON.
+In this scenario, a non-human object (chair) is detected at 154 cm. The sudden distance shift exceeds the threshold, triggering the Activity state (Count: 5) and instantly switching LED7 ON.
 
-. Responsiveness: Despite the dynamic change, the model maintains high accuracy (99.0% confidence).
+. Responsiveness: Despite the dynamic change, the model maintains high accuracy (100% confidence).
 
-. Stability: During extended operation (23,337 total packets), the system processed 993 valid signals at 6.6 ms inference time.
+. Stability: During extended operation (24,793 total packets), the system processed 1077 valid signals at 7.3 ms inference time.
 
-. Accuracy: The session recorded 979 Non-Human and 14 Uncertain classifications. Crucially, zero Human false positives were generated during the active trigger event.
+. Accuracy: The session recorded 1064 Non-Human and 13 Uncertain classifications. Crucially, zero Human false positives were generated during the active trigger event.
 
+![gui002](https://github.com/user-attachments/assets/f28d5533-f238-441f-b03c-9db4c79f9dab)
 
-![gui1](https://github.com/user-attachments/assets/1a8b42bb-6521-4461-a9c6-16b4b3089f1a)
+In this event, the system detects a HUMAN with 100% confidence. The subject's entry caused a sudden distance shift exceeding the 10 cm threshold, instantly triggering the Active status (Count: 33) and turning LED7 ON and continuous CNN Checking.
 
-In this event, the system detects a HUMAN at 102 cm with 100% confidence. The subject's entry caused a sudden distance shift exceeding the 10 cm threshold, instantly triggering the Active status (Count: 24) and turning LED7 ON and continuous CNN Checking.
+the sequence of events: the system initially tracked a static environment (non-human data). When a person suddenly entered the sensor's range, the significant distance change triggered the "Activity" state. Simultaneously, the CNN accurately classified the signal as "Human," which caused the LED7 to remain continuously ON.
 
-Dynamic Response: The metrics capture the real-time transition from a static background (38 Non-Human detections) to human presence (47 Human detections).
-
-Performance: Despite receiving 2,257 broken packets, the pipeline successfully filtered and processed 112 valid signals at 1.23/sec with a 7.9 ms inference time.
-
-Classification: The model demonstrated valid tracking with 27 "Uncertain" states buffering the transition between definitive Human and Non-Human classes.
-
-![human01](https://github.com/user-attachments/assets/c877561d-e542-483c-8974-7ef6949b3859)
+![gui003](https://github.com/user-attachments/assets/94cc9195-e90e-41e3-89e7-ad4cd2617139)
 
 LED7 (yellow light) turns on when HUMAN is detected
 
